@@ -53,11 +53,10 @@ def test_read_users_with_user(client,user):
     # assert response.json() == {'users': list_of_users}
 
 
-def test_update_user(client,user):
-    
-    
+def test_update_user(client,user,token):
     response = client.put(
-        'users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},        
         json={            
         'username': 'teste1',
         'email': 'tteste@tee.com',
@@ -75,34 +74,40 @@ def test_update_user(client,user):
     assert response.json()['username'] == 'teste1'
     assert response.json()['email'] ==  'tteste@tee.com'
     
-def test_update_user_invalid_id_user(client):
+def test_update_user_invalid_id_user(client,user,token):
     response = client.put(
         'users/10',
+        headers={'Authorization': f'Bearer {token}'},  
         json={
-             'id': 1,
-        'username': 'teste1',
-        'email': 'tteste@tee.com',
-        'password': '123'
+            'id': user.id,
+            'username': 'teste1',
+            'email': 'tteste@tee.com',            
+            'password': '123'
         }
     )
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {
-        'detail': 'User not found'
-    }
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    # assert response.json() == {}
 
 
 
-def test_delete_user(client,user):
+def test_delete_user(client,user,token):
     
-    response = client.delete('/users/1')
+    response = client.delete(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        )
 
     assert response.json() ==  {
         'message': 'User deleted'
     }
 
-def test_delete_user_not_found(client):
-    response = client.delete('/users/10')
-    assert response.status_code == HTTPStatus.NOT_FOUND
+def test_delete_user_not_found(client,token):
+    response = client.delete(
+        '/users/10',
+        headers={'Authorization': f'Bearer {token}'},
+        )
+    assert response.status_code == 400
+    assert response.json() == {'detail':'Not enough permission'}
     
 def test_get_token(client,user):    
     response = client.post(
@@ -116,7 +121,14 @@ def test_get_token(client,user):
     assert token['token_type'] == 'Bearer'
     assert 'access_token' in token
 
+def test_jwt_invalid_token(client):
+    response = client.delete(
+        '/users/1',
+        headers={'Authorization': 'Bearer token-invalido'}
+    )
 
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Could not validate credentials'}
 
 
 
