@@ -12,3 +12,6 @@ alembic upgrade head
 
 https://www.youtube.com/watch?v=STt-lARdLSM&list=PLOQgLBuj2-3IuFbt-wJw2p2NiV9WTRzIP&index=7
 1:04:00
+
+https://www.youtube.com/watch?v=JzJYWQ6wBAE&list=PLOQgLBuj2-3IuFbt-wJw2p2NiV9WTRzIP&index=10
+50:10
