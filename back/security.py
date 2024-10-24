@@ -3,12 +3,12 @@ from http import HTTPStatus
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jwt import decode, encode
-from jwt.exceptions import PyJWTError
+from jwt import DecodeError, ExpiredSignatureError, decode, encode
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from zoneinfo import ZoneInfo
+from back.schemas import TokenData
 
 from back.settings import Settings
 
@@ -17,8 +17,9 @@ from back.database import get_session
 from back.models import User
 
 pwd_context = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
 settings = Settings()
+
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
@@ -39,6 +40,9 @@ def create_access_token(data: dict):
     return encode_jwt
 
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth/token')
+
+
 def get_current_user(
     session: Session = Depends(get_session),
     token: str = Depends(oauth2_scheme),
@@ -48,14 +52,22 @@ def get_current_user(
         detail='Could not validate credentials',
         headers={'WWW-Authenticate': 'Bearer'},
     )
+
     try:
         payload = decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get('sub')
         if not username:
             raise credentials_exception
-    except PyJWTError:
+        token_data = TokenData(username=username)
+    except DecodeError:
         raise credentials_exception
-    user = session.scalar(select(User).where(User.email == username))
+
+    except ExpiredSignatureError:        
+        raise credentials_exception
+    
+    user = session.scalar(
+        select(User).where(User.email == token_data.username))
+    
     if not user:
         raise credentials_exception
 
