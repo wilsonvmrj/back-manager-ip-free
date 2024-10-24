@@ -51,5 +51,8 @@ class TodoSchema(BaseModel):
     description: str
     state: TodoState
 
-class TodoPulic(TodoSchema):
+class TodoPublic(TodoSchema):
     id: int
+
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
