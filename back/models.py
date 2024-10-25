@@ -38,3 +38,27 @@ class Todo:
     description: Mapped[str]
     state: Mapped[TodoState]
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()    
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    
+
+@table_registry.mapped_as_dataclass
+class Vlan:
+    __tablename__= 'vlans'
+    id: Mapped[int] = mapped_column(init=False,primary_key=True)
+    vlan:Mapped[int]
+    network: Mapped[str]
+    netmask: Mapped[str]
+    gateway: Mapped[str]
+    description: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()    
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+

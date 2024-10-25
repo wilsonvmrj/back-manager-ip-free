@@ -49,10 +49,37 @@ class TokenData(BaseModel):
 class TodoSchema(BaseModel):
     title: str
     description: str
-    state: TodoState
+    state: TodoState    
+  
 
+    
 class TodoPublic(TodoSchema):
     id: int
 
 class TodoList(BaseModel):
     todos: list[TodoPublic]
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
+
+
+class VlanSchema(BaseModel):     
+    vlan: int
+    network: str
+    netmask: str
+    gateway: str
+    description: str
+
+class VlanDB(VlanSchema):
+    id:int
+   
+   
+class VlanPublic(BaseModel):
+    id: int
+    vlan: int
+    network: str
+
+class VlanList(BaseModel):
+    vlans: list[VlanPublic]

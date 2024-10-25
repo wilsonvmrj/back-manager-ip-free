@@ -4,10 +4,11 @@ from fastapi import APIRouter,Depends
 from fastapi.exceptions import  HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from back.database import get_session
 from back.models import User, Todo
-from back.schemas import Message, TodoList, TodoPublic,TodoSchema
+from back.schemas import Message, TodoList, TodoPublic,TodoSchema, TodoUpdate
 from back.security import get_current_user
 
 
@@ -26,8 +27,8 @@ def create_todo(
         title=todo.title,
         description=todo.description,
         state=todo.state,
-        user_id=user.id,
-    )
+        user_id=user.id,       
+    )    
     session.add(db_todo)
     session.commit()
     session.refresh(db_todo)
@@ -72,6 +73,7 @@ def delete_todo(
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND
         )
+    
     session.delete(todo)
     session.commit()
 
@@ -80,3 +82,25 @@ def delete_todo(
 
     
 
+@router.patch('/{todo_id}')
+def path_todo(
+    todo_id: int,
+    session: T_Session,
+    user: T_CurrentUser,
+    todo: TodoUpdate,
+    ):
+    db_todo = session.scalar(
+        select(Todo).where(Todo.user_id == user.id, Todo.id == todo_id)
+    )
+    if not db_todo:
+        raise HTTPException(
+            status_code = HTTPStatus.NOT_FOUND, detail='Task not Found'
+        )
+    for key, value in todo.model_dump(exclude_unset=True).items():
+        setattr(db_todo, key, value)
+    
+    session.add(db_todo)
+    session.commit()
+    session.refresh(db_todo)
+
+    return db_todo

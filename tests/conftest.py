@@ -9,11 +9,21 @@ from sqlalchemy.pool import StaticPool
 
 from back.app import app
 from back.database import get_session
-from back.models import User, table_registry,Todo,TodoState
+from back.models import User, Vlan, table_registry,Todo,TodoState
 from back.security import get_password_hash
 from back.settings import Settings
 
 settings = Settings()
+
+class VlanFactory(factory.Factory):
+    class Meta:
+        model: Vlan
+    vlan=factory.Sequence(lambda n: n)
+    network=factory.Sequence(lambda n: f'192.168.{n}.0')
+    netmask= "255.255.255.0"
+    gateway= factory.Sequence(lambda n: f'192.168.{n}.1')
+    description= factory.Sequence(lambda n: f'Vlan id {n}')
+
 
 
 class UserFactory(factory.Factory):
